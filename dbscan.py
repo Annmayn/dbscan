@@ -14,11 +14,12 @@ import matplotlib.pyplot as plt
 from sklearn import datasets
 
 arr, y = datasets.make_circles(n_samples=500, factor=0.74, noise=0)
-#arr, y = datasets.make_blobs(n_samples=50)
+#arr, y = datasets.make_blobs(n_samples=500)
 #end of custom dataset
 
+#e=20k for _1.csv, e=4 for make_blobs, e=0.2 for make_circles
 e=0.2
-minPoint=2
+minPoint=5
 
 
 clusterInfo = np.empty(arr.shape[0])
