@@ -7,5 +7,5 @@ def findDistance(n, arr, e):
     #size of n: (1,2) or (2,)
     #size of arr: (x, 2) ; x=number of points in problem domain
     dist=np.sqrt(np.sum((arr-n)**2, axis=1))
-    #return the index of all such points that satisfy the condition distance < e
+    #return the index of all such points that satisfy the condition distance <= e
     return np.where(dist<=e)[0]     #return the array part of tuple
