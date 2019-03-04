@@ -13,63 +13,69 @@ import matplotlib.pyplot as plt
 #custom built dataset from sklearn
 from sklearn import datasets
 
-#arr, y = datasets.make_moons(n_samples=500, factor=0.74, noise=0.15)
-arr, y = datasets.make_blobs(n_samples=500)
+arr, y = datasets.make_circles(n_samples=500, factor=0.74, noise=0)
+#arr, y = datasets.make_blobs(n_samples=50)
 #end of custom dataset
 
-e=2
-minPoint=3
+e=0.2
+minPoint=2
 
-#arr = system.args[2]
-#generate queue of random selection
+
+clusterInfo = np.empty(arr.shape[0])
+#create a core node info list
+coreNodeInfo = []
+#0 = not visited, -1 = outlier, >0 = cluster number
+clusterInfo.fill(-1)    
+
+#sample nodes at random
 randomPointQueue = np.random.choice(arr.shape[0], size=arr.shape[0], replace=False)
 randomPointQueue = randomPointQueue.tolist()
-#create a visited list
-clusterInfo = np.empty(arr.shape[0])
-#0 = not visited, -1 = outlier, >0 = cluster number
-clusterInfo.fill(0)    
-
 #start cluster number from 1
 clusterNum = 1
 
+def findAllCoreNode(arr, e, minPoint):
+    global randomPointQueue
+    global coreNodeInfo
+    for ind in range(len(arr)):
+        ind_lst = processor.findNeighbor(arr[ind], arr, e)
+        if len(ind_lst) >= minPoint:
+            coreNodeInfo.append(1)
+        else:
+            coreNodeInfo.append(0)   
 
-def isCoreNode(i, arr, e, minPoint):
-    global clusterNum
-    #define the stack for neighbor searching using dfs
-    customQueueArr = []
-    ind_lst = processor.findDistance(arr[i], arr, e)
-    print(len(ind_lst))
-    #not core node
-    if len(ind_lst)<minPoint and clusterInfo[i]<1: #clusterInfo[i]<1 makes sure classified nodes aren't affected
-        clusterInfo[i]=-1
-        
-    #if core node 
-    elif len(ind_lst)>=minPoint:
-        tmpArr=[]
-        clusterInfo[i]=clusterNum
-        clusterInfo[ind_lst]=clusterNum
-        for ind in ind_lst:
-            #remove from global random sample list
+def findCluster(i, arr, e, minPoint):
+    global clusterNum, randomPointQueue
+    ind_lst = processor.findNeighbor(arr[i], arr, e)
+    ind_lst = ind_lst.tolist()
+    for tmp in ind_lst:
+        if tmp==i: ind_lst.remove(tmp)
+    clusterInfo[i]=clusterNum
+    clusterInfo[ind_lst]=clusterNum
+    
+    while len(ind_lst)!=0:
+        ind=ind_lst.pop(0)
+        if coreNodeInfo[ind]==1:
+            #remove from stack
             if ind in randomPointQueue:
                 randomPointQueue.remove(ind)
-                #remove from stack
-                if ind in customQueueArr: customQueueArr.remove(ind)
-                #ignore current node
-                if ind != i:    tmpArr+=ind
-        customQueueArr = np.append(tmpArr, customQueueArr).tolist()
-        
-    while len(customQueueArr)!=0:
-        ind = customQueueArr[0]
-        customQueueArr = customQueueArr[1:]
-        isCoreNode(ind, arr, e, minPoint)
+                lst = processor.findNeighbor(arr[ind], arr, e)
+                lst = lst.tolist()
+                for tmp in lst:
+                    if tmp==ind: lst.remove(tmp)
+                clusterInfo[ind]=clusterNum
+                clusterInfo[lst]=clusterNum
+                for l in lst:
+                    if l not in ind_lst:
+                        ind_lst.append(l)
     clusterNum+=1
         
 def runDbscan(arr, e, minPoint):
-    global randomPointQueue
+    global coreNodeInfo, randomPointQueue
+    findAllCoreNode(arr, e, minPoint)
     while len(randomPointQueue)!=0:
-        ind = randomPointQueue[0]
-        randomPointQueue = randomPointQueue[1:]  
-        isCoreNode(ind, arr, e, minPoint)
+        ind = randomPointQueue.pop(0)
+        if coreNodeInfo[ind]==1:
+            findCluster(ind, arr, e, minPoint)
 
 #run the main code
 runDbscan(arr, e, minPoint)   
