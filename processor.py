@@ -2,7 +2,7 @@
 import numpy as np
 
 #finds distance between point n and every point in arr
-def findDistance(n, arr, e):
+def findNeighbor(n, arr, e):
     #ultimately finds all neighbor points within radius e from point n
     #size of n: (1,2) or (2,)
     #size of arr: (x, 2) ; x=number of points in problem domain
